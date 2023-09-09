@@ -1,0 +1,10 @@
+(executable
+ (public_name rocket)
+ (name main)
+ (modules main)
+ (libraries rocket_chapter2))
+
+(executable
+ (name dumpast)
+ (modules dumpast)
+ (libraries rocket_chapter2))
