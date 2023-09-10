@@ -5,6 +5,11 @@
  (libraries rocket_chapter2))
 
 (executable
+ (name rocketc)
+ (modules rocketc)
+ (libraries rocket_chapter2))
+
+(executable
  (name dumpast)
  (modules dumpast)
  (libraries rocket_chapter2))

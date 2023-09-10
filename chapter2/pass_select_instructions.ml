@@ -15,7 +15,7 @@ let rec handle_tail (tail : C_var.tail) : block =
   match tail with
   | C_var.Seq (st, next) -> handle_statement st @ handle_tail next
   | C_var.Return expr ->
-      handle_statement (C_var.Assign ("%rax", expr)) @ [ Jmp "_end" ]
+      handle_statement (C_var.Assign ("%rax", expr)) @ [ Jmp "_conclusion" ]
 
 let to_info C_var.{ locals } : X86_var.info = { locals }
 
@@ -29,5 +29,5 @@ let run : C_var.program -> X86_var.program =
           |> List.map (fun (C_var.{ locals }, _) -> locals)
           |> List.concat |> List.sort_uniq compare;
       };
-    labels = List.map (fun (_info, t) -> ("", handle_tail t)) program;
+    labels = List.map (fun (_info, t) -> ("_start", handle_tail t)) program;
   }

@@ -4,7 +4,7 @@ let stack_size = 8
 
 let remap_var ~locals (v : var) =
   match List.find_opt (fun (_, v') -> v = v') locals with
-  | Some (reg_offset, _) -> Deref ((-(reg_offset+1)) * stack_size, Rbp)
+  | Some (reg_offset, _) -> Deref (-(reg_offset + 1) * stack_size, Rbp)
   | None -> Var v
 
 let remap_arg ~locals (arg : arg) =

@@ -3,7 +3,7 @@ open Sexplib.Std
 type label = string [@@deriving sexp]
 type var = string [@@deriving sexp]
 
-type reg =
+type reg = X86.reg =
   | Rsp
   | Rbp
   | Rax
@@ -36,7 +36,6 @@ type instr =
   | Callq of label
   | Reqt
   | Jmp of label
-  | Label of instr
 [@@deriving sexp]
 
 type info = { locals : var list } [@@deriving sexp]

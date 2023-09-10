@@ -78,4 +78,15 @@ let () =
   Format.force_newline ();
   Format.force_newline ();
 
+  let ast = ast |> Rocket_chapter2.Pass_patch_instructions.run in
+  Sexplib.Sexp.pp_hum_indent 2 Format.std_formatter
+    (Rocket_chapter2.X86.sexp_of_program ast);
+  Format.force_newline ();
+  Format.force_newline ();
+
+  let x86 = ast |> Rocket_chapter2.Pass_prelude_and_conclusion.run in
+  Rocket_chapter2.X86.pp Format.std_formatter x86;
+  Format.force_newline ();
+  Format.force_newline ();
+
   ()
