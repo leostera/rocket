@@ -1,43 +1,53 @@
-open X86
+open Arm
 
-exception Unpatchable_arg of X86_var.arg
+exception Unpatchable_arg of Arm_var.arg
 
-let is_deref (ref : X86_var.arg) =
-  match ref with Deref (_, _) -> true | _ -> false
+let is_offset (offset : Arm_var.arg) =
+  match offset with Offset (_, _) -> true | _ -> false
 
-let move ref1 ref2 = [ Movq (ref1, Reg Rax); Movq (Reg Rax, ref2) ]
-let add ref1 ref2 = [ Movq (ref1, Reg Rax); Addq (Reg Rax, ref2) ]
-let sub ref1 ref2 = [ Movq (ref1, Reg Rax); Subq (Reg Rax, ref2) ]
+let move offset1 offset2 = [ Mov (Reg R0, offset1); Mov (offset2, Reg R0) ]
+let add offset1 offset2 = [ Mov (Reg R0, offset1); Add (offset2, Reg R0) ]
+let sub offset1 offset2 = [ Mov (Reg R0, offset1); Sub (offset2, Reg R0) ]
 
-let patch_arg (arg : X86_var.arg) : X86.arg =
+let rec patch_arg (arg : Arm_var.arg) : Arm.arg =
   match arg with
-  | X86_var.Int x -> Int x
-  | X86_var.Reg reg -> Reg reg
-  | X86_var.Deref (offset, reg) -> Deref (offset, reg)
-  | X86_var.Var "%rax" -> Reg Rax
+  | Arm_var.Int x -> Int x
+  | Arm_var.Reg reg -> Reg reg
+  | Arm_var.Offset (reg, offset) -> Offset (reg, patch_arg offset)
+  | Arm_var.Var "%R0" -> Reg R0
   | _ -> raise (Unpatchable_arg arg)
 
-let patch_instr (instr : X86_var.instr) : X86.instr list =
+let patch_load (load : Arm_var.load) : Arm.load =
+  match load with
+  | Arm_var.Prefix (a, b) -> Prefix (patch_arg a, patch_arg b)
+  | Arm_var.Postfix (a, b) -> Postfix (patch_arg a, patch_arg b)
+  | Arm_var.Offset (a, b) -> Offset (patch_arg a, patch_arg b)
+
+let patch_instr (instr : Arm_var.instr) : Arm.instr list =
   match instr with
-  | X86_var.Movq (ref1, ref2) when is_deref ref1 && is_deref ref2 ->
-      move (patch_arg ref1) (patch_arg ref2)
-  | X86_var.Addq (ref1, ref2) when is_deref ref1 && is_deref ref2 ->
-      add (patch_arg ref1) (patch_arg ref2)
-  | X86_var.Subq (ref1, ref2) when is_deref ref1 && is_deref ref2 ->
-      sub (patch_arg ref1) (patch_arg ref2)
-  | X86_var.Addq (x, y) -> [ Addq (patch_arg x, patch_arg y) ]
-  | X86_var.Subq (x, y) -> [ Subq (patch_arg x, patch_arg y) ]
-  | X86_var.Movq (x, y) -> [ Movq (patch_arg x, patch_arg y) ]
-  | X86_var.Negq arg -> [ Negq (patch_arg arg) ]
-  | X86_var.Pushq arg -> [ Pushq (patch_arg arg) ]
-  | X86_var.Popq arg -> [ Popq (patch_arg arg) ]
-  | X86_var.Callq var -> [ Callq var ]
-  | X86_var.Reqt -> [ Reqt ]
-  | X86_var.Jmp label -> [ Jmp label ]
+  | Arm_var.Mov (offset1, offset2) when is_offset offset1 && is_offset offset2
+    ->
+      move (patch_arg offset1) (patch_arg offset2)
+  | Arm_var.Add (offset1, offset2) when is_offset offset1 && is_offset offset2
+    ->
+      add (patch_arg offset1) (patch_arg offset2)
+  | Arm_var.Sub (offset1, offset2) when is_offset offset1 && is_offset offset2
+    ->
+      sub (patch_arg offset1) (patch_arg offset2)
+  | Arm_var.Add (x, y) -> [ Add (patch_arg x, patch_arg y) ]
+  | Arm_var.Sub (x, y) -> [ Sub (patch_arg x, patch_arg y) ]
+  | Arm_var.Mov (x, y) -> [ Mov (patch_arg x, patch_arg y) ]
+  | Arm_var.Push arg -> [ Push (patch_arg arg) ]
+  | Arm_var.Pop arg -> [ Pop (patch_arg arg) ]
+  | Arm_var.Bl label -> [ Bl label ]
+  | Arm_var.Bx reg -> [ Bx reg ]
+  | Arm_var.Ldr arg -> [ Ldr (patch_load arg) ]
+  | Arm_var.Rsbs (x, y) -> [ Rsbs (patch_arg x, patch_arg y) ]
+  | Arm_var.Str (x, y) -> [ Str (patch_arg x, patch_arg y) ]
 
 let patch_block (lbl, block) = (lbl, List.flatten @@ List.map patch_instr block)
-let patch_info X86_var.{ locals } = X86.{ locals }
+let patch_info Arm_var.{ locals } = Arm.{ locals }
 
-let run : X86_var.program -> X86.program =
+let run : Arm_var.program -> Arm.program =
  fun { info; labels } ->
   { info = patch_info info; labels = List.map patch_block labels }

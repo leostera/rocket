@@ -10,9 +10,9 @@ let () =
     |> Rocket_chapter2.Pass_prelude_and_conclusion.run
   in
 
-  let oc = open_out "test.asm" in
+  let oc = open_out "test.s" in
   let fmt = Format.formatter_of_out_channel oc in
-  Rocket_chapter2.X86.pp fmt ast;
+  Rocket_chapter2.Arm.pp fmt ast;
   Format.force_newline ();
   Format.force_newline ();
   close_out oc;
