@@ -1,6 +1,6 @@
 let () =
   let ast =
-    Rocket_chapter2.L_var.(Let ("a", Int 42, Let ("b", Var "a", Var "b")))
+    Rocket_chapter2.L_var.(Let ("a", Int 7, Let ("b", Var "a", Var "b")))
     |> Rocket_chapter2.Pass_uniquify.run
     |> Rocket_chapter2.Pass_remove_complex_operands.run
     |> Rocket_chapter2.Pass_explicate_control.run

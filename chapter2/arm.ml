@@ -29,6 +29,7 @@ type load =
   | Prefix of arg * arg
   | Postfix of arg * arg
   | Offset of arg * arg
+[@@deriving sexp]
 
 type instr =
   | Adr of arg * arg

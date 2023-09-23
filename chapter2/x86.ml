@@ -73,7 +73,7 @@ module Printer = struct
     | Addq (x, y) -> Format.fprintf fmt "addq %a, %a" pp_arg x pp_arg y
     | Subq (x, y) -> Format.fprintf fmt "subq %a, %a" pp_arg x pp_arg y
     | Negq x -> Format.fprintf fmt "negq %a" pp_arg x
-    | Movq (x, y) -> Format.fprintf fmt "subq %a, %a" pp_arg x pp_arg y
+    | Movq (x, y) -> Format.fprintf fmt "movq %a, %a" pp_arg x pp_arg y
     | Pushq arg -> Format.fprintf fmt "pushq %a" pp_arg arg
     | Popq arg -> Format.fprintf fmt "popq %a" pp_arg arg
     | Callq label -> Format.fprintf fmt "callq %s" label
@@ -85,7 +85,9 @@ module Printer = struct
     List.iter (fun instr -> Format.fprintf fmt "  %a\n" pp_instr instr) block;
     Format.fprintf fmt "\n"
 
-  let pp fmt (program : program) = List.iter (pp_label fmt) program.labels
+  let pp fmt (program : program) =
+    Format.fprintf fmt ".global _main\n";
+    List.iter (pp_label fmt) program.labels
 end
 
 let pp = Printer.pp
