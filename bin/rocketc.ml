@@ -5,6 +5,7 @@ let () =
     |> Rocket_chapter2.Pass_remove_complex_operands.run
     |> Rocket_chapter2.Pass_explicate_control.run
     |> Rocket_chapter2.Pass_select_instructions.run
+    |> Rocket_chapter2.Pass_uncover_liveness.run
     |> Rocket_chapter2.Pass_assign_homes.run
     |> Rocket_chapter2.Pass_patch_instructions.run
     |> Rocket_chapter2.Pass_prelude_and_conclusion.run

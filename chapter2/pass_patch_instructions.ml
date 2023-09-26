@@ -17,7 +17,7 @@ let patch_arg (arg : X86_var.arg) : X86.arg =
   | X86_var.Var "%rax" -> Reg Rax
   | _ -> raise (Unpatchable_arg arg)
 
-let patch_instr (instr : X86_var.instr) : X86.instr list =
+let patch_instr (instr, _live) : X86.instr list =
   match instr with
   | X86_var.Movq (ref1, ref2) when is_deref ref1 && is_deref ref2 ->
       move (patch_arg ref1) (patch_arg ref2)
@@ -38,6 +38,6 @@ let patch_instr (instr : X86_var.instr) : X86.instr list =
 let patch_block (lbl, block) = (lbl, List.flatten @@ List.map patch_instr block)
 let patch_info X86_var.{ locals } = X86.{ locals }
 
-let run : X86_var.program -> X86.program =
+let run : X86_live.program -> X86.program =
  fun { info; labels } ->
   { info = patch_info info; labels = List.map patch_block labels }
