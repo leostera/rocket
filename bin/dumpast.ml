@@ -19,7 +19,7 @@ let () =
   in
   *)
   let ast =
-    Rocket_chapter2.L_var.(Let ("a", Int 42, Let ("b", Var "a", Var "b")))
+    Rocket_chapter2.L_var.(Let ("a", Int 5, Let ("b", Int 30, Let ("c", Var "a", Let ("b", Int 10, Prim (Add (Var "c", Var "b")))))))
   in
 
   let ast = ast |> Rocket_chapter2.Pass_uniquify.run in

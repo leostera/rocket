@@ -1,5 +1,4 @@
 open X86_var
-open X86_live
 
 let stack_size = 8
 
@@ -13,13 +12,13 @@ let remap_arg ~locals (arg : arg) =
 
 let remap_instr ~locals (instr, live) =
   match instr with
-  | Addq (x, y) -> Addq (remap_arg ~locals x, remap_arg ~locals y), live
-  | Subq (x, y) -> Subq (remap_arg ~locals x, remap_arg ~locals y), live
-  | Negq x -> Negq (remap_arg ~locals x), live
-  | Movq (x, y) -> Movq (remap_arg ~locals x, remap_arg ~locals y), live
-  | Pushq x -> Pushq (remap_arg ~locals x), live
-  | Popq x -> Popq (remap_arg ~locals x), live
-  | _ -> instr, live
+  | Addq (x, y) -> (Addq (remap_arg ~locals x, remap_arg ~locals y), live)
+  | Subq (x, y) -> (Subq (remap_arg ~locals x, remap_arg ~locals y), live)
+  | Negq x -> (Negq (remap_arg ~locals x), live)
+  | Movq (x, y) -> (Movq (remap_arg ~locals x, remap_arg ~locals y), live)
+  | Pushq x -> (Pushq (remap_arg ~locals x), live)
+  | Popq x -> (Popq (remap_arg ~locals x), live)
+  | _ -> (instr, live)
 
 let remap_block ~locals (lbl, block) =
   (lbl, List.map (remap_instr ~locals) block)
